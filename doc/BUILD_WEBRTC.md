@@ -95,9 +95,8 @@
     proprietary_codecs=true 
     clang_use_chrome_plugins=false'
     ```
-    > [!NOTE]
-    > **If you are using a custom clang version, add the flag:**<br/>
-    > `clang_base_path="/home/pi/clang+llvm-16.0.6-aarch64-linux-gnu"`.
+> [!NOTE]
+> If you are using a custom clang version, add the flag: `clang_base_path="/home/pi/clang+llvm-16.0.6-aarch64-linux-gnu"`.
 
 - ### Step 2: Build
 
