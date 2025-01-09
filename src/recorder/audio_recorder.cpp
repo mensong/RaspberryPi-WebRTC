@@ -118,6 +118,7 @@ void AudioRecorder::OnBuffer(PaBuffer &buffer) {
 
 bool AudioRecorder::ConsumeBuffer() {
     if (fifo_buffer.size() < frame_size) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         return false;
     }
     Encode();
