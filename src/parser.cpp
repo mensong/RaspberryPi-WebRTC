@@ -37,7 +37,7 @@ void Parser::ParseArgs(int argc, char *argv[], Args &args) {
             "The length (in seconds) of each MP4 recording.")
         ("camera", bpo::value<std::string>()->default_value(args.camera),
             "Specify the camera using V4L2 or Libcamera. "
-            "Examples: \"libcamera:0\" for Libcamera, \"v4l2:/dev/video0\" for V4L2.")
+            "Examples: \"libcamera:0\" for Libcamera, \"v4l2:0\" for V4L2 at `/dev/video0`.")
         ("fixed_resolution", bpo::bool_switch()->default_value(args.fixed_resolution),
             "Disable adaptive resolution scaling and keep a fixed resolution.")
         ("no_audio", bpo::bool_switch()->default_value(args.no_audio), "Run without audio source")
