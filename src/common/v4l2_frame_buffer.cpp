@@ -1,23 +1,22 @@
 #include "common/v4l2_frame_buffer.h"
+#include "common/logging.h"
 
 #include <third_party/libyuv/include/libyuv.h>
-
-#include "common/logging.h"
 
 // Aligning pointer to 64 bytes for improved performance, e.g. use SIMD.
 static const int kBufferAlignment = 64;
 
-rtc::scoped_refptr<V4l2FrameBuffer> V4l2FrameBuffer::Create(int width, int height, int size,
+rtc::scoped_refptr<V4L2FrameBuffer> V4L2FrameBuffer::Create(int width, int height, int size,
                                                             uint32_t format) {
-    return rtc::make_ref_counted<V4l2FrameBuffer>(width, height, size, format);
+    return rtc::make_ref_counted<V4L2FrameBuffer>(width, height, size, format);
 }
 
-rtc::scoped_refptr<V4l2FrameBuffer> V4l2FrameBuffer::Create(int width, int height,
-                                                            V4l2Buffer buffer, uint32_t format) {
-    return rtc::make_ref_counted<V4l2FrameBuffer>(width, height, buffer, format);
+rtc::scoped_refptr<V4L2FrameBuffer> V4L2FrameBuffer::Create(int width, int height,
+                                                            V4L2Buffer buffer, uint32_t format) {
+    return rtc::make_ref_counted<V4L2FrameBuffer>(width, height, buffer, format);
 }
 
-V4l2FrameBuffer::V4l2FrameBuffer(int width, int height, V4l2Buffer buffer, uint32_t format)
+V4L2FrameBuffer::V4L2FrameBuffer(int width, int height, V4L2Buffer buffer, uint32_t format)
     : width_(width),
       height_(height),
       format_(format),
@@ -28,7 +27,7 @@ V4l2FrameBuffer::V4l2FrameBuffer(int width, int height, V4l2Buffer buffer, uint3
       is_buffer_copied(false),
       data_(static_cast<uint8_t *>(webrtc::AlignedMalloc(size_, kBufferAlignment))) {}
 
-V4l2FrameBuffer::V4l2FrameBuffer(int width, int height, int size, uint32_t format)
+V4L2FrameBuffer::V4L2FrameBuffer(int width, int height, int size, uint32_t format)
     : width_(width),
       height_(height),
       format_(format),
@@ -38,23 +37,23 @@ V4l2FrameBuffer::V4l2FrameBuffer(int width, int height, int size, uint32_t forma
       is_buffer_copied(false),
       data_(static_cast<uint8_t *>(webrtc::AlignedMalloc(size_, kBufferAlignment))) {}
 
-V4l2FrameBuffer::~V4l2FrameBuffer() {}
+V4L2FrameBuffer::~V4L2FrameBuffer() {}
 
-webrtc::VideoFrameBuffer::Type V4l2FrameBuffer::type() const { return Type::kNative; }
+webrtc::VideoFrameBuffer::Type V4L2FrameBuffer::type() const { return Type::kNative; }
 
-int V4l2FrameBuffer::width() const { return width_; }
+int V4L2FrameBuffer::width() const { return width_; }
 
-int V4l2FrameBuffer::height() const { return height_; }
+int V4L2FrameBuffer::height() const { return height_; }
 
-uint32_t V4l2FrameBuffer::format() const { return format_; }
+uint32_t V4L2FrameBuffer::format() const { return format_; }
 
-unsigned int V4l2FrameBuffer::size() const { return size_; }
+unsigned int V4L2FrameBuffer::size() const { return size_; }
 
-unsigned int V4l2FrameBuffer::flags() const { return flags_; }
+unsigned int V4L2FrameBuffer::flags() const { return flags_; }
 
-timeval V4l2FrameBuffer::timestamp() const { return timestamp_; }
+timeval V4L2FrameBuffer::timestamp() const { return timestamp_; }
 
-rtc::scoped_refptr<webrtc::I420BufferInterface> V4l2FrameBuffer::ToI420() {
+rtc::scoped_refptr<webrtc::I420BufferInterface> V4L2FrameBuffer::ToI420() {
     rtc::scoped_refptr<webrtc::I420Buffer> i420_buffer(webrtc::I420Buffer::Create(width_, height_));
     i420_buffer->InitializeData();
 
@@ -77,11 +76,11 @@ rtc::scoped_refptr<webrtc::I420BufferInterface> V4l2FrameBuffer::ToI420() {
     return i420_buffer;
 }
 
-void V4l2FrameBuffer::CopyBufferData() {
+void V4L2FrameBuffer::CopyBufferData() {
     memcpy(data_.get(), (uint8_t *)buffer_.start, size_);
     is_buffer_copied = true;
 }
 
-V4l2Buffer V4l2FrameBuffer::GetRawBuffer() { return buffer_; }
+V4L2Buffer V4L2FrameBuffer::GetRawBuffer() { return buffer_; }
 
-const void *V4l2FrameBuffer::Data() const { return data_.get(); }
+const void *V4L2FrameBuffer::Data() const { return data_.get(); }

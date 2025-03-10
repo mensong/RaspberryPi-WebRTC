@@ -1,5 +1,5 @@
-#ifndef H264_ENCODER_
-#define H264_ENCODER_
+#ifndef OPENH264_ENCODER_
+#define OPENH264_ENCODER_
 
 #include <functional>
 
@@ -9,15 +9,14 @@
 #include "args.h"
 #include "common/v4l2_utils.h"
 
-class H264Encoder {
+class Openh264Encoder {
   public:
-    static std::unique_ptr<H264Encoder> Create(Args args);
-    H264Encoder(Args args);
-    ~H264Encoder();
+    static std::unique_ptr<Openh264Encoder> Create(Args args);
+    Openh264Encoder(Args args);
+    ~Openh264Encoder();
     void Init();
     void Encode(rtc::scoped_refptr<webrtc::I420BufferInterface> frame_buffer,
                 std::function<void(uint8_t *, int)> on_capture);
-    void ReleaseCodec();
 
   private:
     int fps_;
@@ -28,4 +27,4 @@ class H264Encoder {
     SSourcePicture src_pic_;
 };
 
-#endif // H264_ENCODER_
+#endif // OPENH264_ENCODER_

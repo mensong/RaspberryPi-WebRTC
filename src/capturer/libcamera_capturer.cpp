@@ -187,7 +187,7 @@ void LibcameraCapturer::RequestComplete(libcamera::Request *request) {
     tv.tv_sec = buffer->metadata().timestamp / 1000000000;
     tv.tv_usec = (buffer->metadata().timestamp % 1000000000) / 1000;
 
-    V4l2Buffer v4l2_buffer((uint8_t *)data, length, V4L2_BUF_FLAG_KEYFRAME, tv);
+    V4L2Buffer v4l2_buffer((uint8_t *)data, length, V4L2_BUF_FLAG_KEYFRAME, tv);
     NextBuffer(v4l2_buffer);
 
     request->reuse(libcamera::Request::ReuseBuffers);
@@ -204,8 +204,8 @@ rtc::scoped_refptr<webrtc::I420BufferInterface> LibcameraCapturer::GetI420Frame(
     return frame_buffer_->ToI420();
 }
 
-void LibcameraCapturer::NextBuffer(V4l2Buffer &buffer) {
-    frame_buffer_ = V4l2FrameBuffer::Create(width_, height_, buffer, format_);
+void LibcameraCapturer::NextBuffer(V4L2Buffer &buffer) {
+    frame_buffer_ = V4L2FrameBuffer::Create(width_, height_, buffer, format_);
     NextFrameBuffer(frame_buffer_);
     NextRawBuffer(buffer);
 }

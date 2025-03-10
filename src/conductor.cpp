@@ -55,13 +55,13 @@ void Conductor::InitializeTracks() {
             if (args.use_libcamera) {
                 return LibcameraCapturer::Create(args);
             } else {
-                return V4l2Capturer::Create(args);
+                return V4L2Capturer::Create(args);
             }
         })();
 
         video_track_source_ = ([this]() -> rtc::scoped_refptr<ScaleTrackSource> {
             if (args.hw_accel) {
-                return V4l2DmaTrackSource::Create(video_capture_source_);
+                return V4L2DmaTrackSource::Create(video_capture_source_);
             } else {
                 return ScaleTrackSource::Create(video_capture_source_);
             }

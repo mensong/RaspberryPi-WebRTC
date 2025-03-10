@@ -49,8 +49,8 @@ class LibcameraCapturer : public VideoCapturer {
     libcamera::ControlList controls_;
     std::map<int, std::pair<void *, unsigned int>> mapped_buffers_;
 
-    rtc::scoped_refptr<V4l2FrameBuffer> frame_buffer_;
-    void NextBuffer(V4l2Buffer &raw_buffer);
+    rtc::scoped_refptr<V4L2FrameBuffer> frame_buffer_;
+    void NextBuffer(V4L2Buffer &raw_buffer);
 
     LibcameraCapturer &SetFormat(int width, int height);
     LibcameraCapturer &SetFps(int fps);

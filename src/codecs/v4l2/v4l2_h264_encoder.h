@@ -7,12 +7,12 @@
 #include <modules/video_coding/codecs/h264/include/h264.h>
 
 #include "args.h"
-#include "v4l2_codecs/v4l2_encoder.h"
+#include "codecs/v4l2/v4l2_encoder.h"
 
-class V4l2H264Encoder : public webrtc::VideoEncoder {
+class V4L2H264Encoder : public webrtc::VideoEncoder {
   public:
     static std::unique_ptr<webrtc::VideoEncoder> Create(Args args);
-    V4l2H264Encoder(Args args);
+    V4L2H264Encoder(Args args);
 
     int32_t InitEncode(const webrtc::VideoCodec *codec_settings,
                        const VideoEncoder::Settings &settings) override;
@@ -33,9 +33,9 @@ class V4l2H264Encoder : public webrtc::VideoEncoder {
     webrtc::EncodedImage encoded_image_;
     webrtc::EncodedImageCallback *callback_;
     webrtc::BitrateAdjuster bitrate_adjuster_;
-    std::unique_ptr<V4l2Encoder> encoder_;
+    std::unique_ptr<V4L2Encoder> encoder_;
 
-    virtual void SendFrame(const webrtc::VideoFrame &frame, V4l2Buffer &encoded_buffer);
+    virtual void SendFrame(const webrtc::VideoFrame &frame, V4L2Buffer &encoded_buffer);
 };
 
 #endif

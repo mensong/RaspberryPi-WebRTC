@@ -1,4 +1,5 @@
 #include "v4l2_utils.h"
+#include "common/logging.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -7,21 +8,19 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#include "common/logging.h"
-
-bool V4l2Util::IsSinglePlaneVideo(v4l2_capability *cap) {
+bool V4L2Util::IsSinglePlaneVideo(v4l2_capability *cap) {
     return (cap->capabilities & (V4L2_CAP_VIDEO_CAPTURE | V4L2_CAP_VIDEO_OUTPUT) &&
             (cap->capabilities & V4L2_CAP_STREAMING)) ||
            (cap->capabilities & V4L2_CAP_VIDEO_M2M);
 }
 
-bool V4l2Util::IsMultiPlaneVideo(v4l2_capability *cap) {
+bool V4L2Util::IsMultiPlaneVideo(v4l2_capability *cap) {
     return (cap->capabilities & (V4L2_CAP_VIDEO_CAPTURE_MPLANE | V4L2_CAP_VIDEO_OUTPUT_MPLANE) &&
             (cap->capabilities & V4L2_CAP_STREAMING)) ||
            (cap->capabilities & V4L2_CAP_VIDEO_M2M_MPLANE);
 }
 
-std::string V4l2Util::FourccToString(uint32_t fourcc) {
+std::string V4L2Util::FourccToString(uint32_t fourcc) {
     int length = 4;
     std::string buf;
     buf.resize(length);
@@ -34,7 +33,7 @@ std::string V4l2Util::FourccToString(uint32_t fourcc) {
     return buf;
 }
 
-int V4l2Util::OpenDevice(const char *file) {
+int V4L2Util::OpenDevice(const char *file) {
     int fd = open(file, O_RDWR);
     if (fd < 0) {
         ERROR_PRINT("v4l2 open(%s): %s", file, strerror(errno));
@@ -44,12 +43,12 @@ int V4l2Util::OpenDevice(const char *file) {
     return fd;
 }
 
-void V4l2Util::CloseDevice(int fd) {
+void V4L2Util::CloseDevice(int fd) {
     close(fd);
     DEBUG_PRINT("fd(%d) is closed!", fd);
 }
 
-bool V4l2Util::QueryCapabilities(int fd, v4l2_capability *cap) {
+bool V4L2Util::QueryCapabilities(int fd, v4l2_capability *cap) {
     if (ioctl(fd, VIDIOC_QUERYCAP, cap) < 0) {
         ERROR_PRINT("fd(%d) query capabilities: %s", fd, strerror(errno));
         return false;
@@ -57,16 +56,16 @@ bool V4l2Util::QueryCapabilities(int fd, v4l2_capability *cap) {
     return true;
 }
 
-bool V4l2Util::InitBuffer(int fd, V4l2BufferGroup *gbuffer, v4l2_buf_type type, v4l2_memory memory,
+bool V4L2Util::InitBuffer(int fd, V4L2BufferGroup *gbuffer, v4l2_buf_type type, v4l2_memory memory,
                           bool has_dmafd) {
     v4l2_capability cap = {};
-    if (!V4l2Util::QueryCapabilities(fd, &cap)) {
+    if (!V4L2Util::QueryCapabilities(fd, &cap)) {
         return false;
     }
 
     DEBUG_PRINT("fd(%d) driver '%s' on card '%s' in %s mode", fd, cap.driver, cap.card,
-                V4l2Util::IsSinglePlaneVideo(&cap)  ? "splane"
-                : V4l2Util::IsMultiPlaneVideo(&cap) ? "mplane"
+                V4L2Util::IsSinglePlaneVideo(&cap)  ? "splane"
+                : V4L2Util::IsMultiPlaneVideo(&cap) ? "mplane"
                                                     : "unknown");
     gbuffer->fd = fd;
     gbuffer->type = type;
@@ -76,7 +75,7 @@ bool V4l2Util::InitBuffer(int fd, V4l2BufferGroup *gbuffer, v4l2_buf_type type, 
     return true;
 }
 
-bool V4l2Util::DequeueBuffer(int fd, v4l2_buffer *buffer) {
+bool V4L2Util::DequeueBuffer(int fd, v4l2_buffer *buffer) {
     if (ioctl(fd, VIDIOC_DQBUF, buffer) < 0) {
         ERROR_PRINT("fd(%d) dequeue buffer: %s", fd, strerror(errno));
         return false;
@@ -84,7 +83,7 @@ bool V4l2Util::DequeueBuffer(int fd, v4l2_buffer *buffer) {
     return true;
 }
 
-bool V4l2Util::QueueBuffer(int fd, v4l2_buffer *buffer) {
+bool V4L2Util::QueueBuffer(int fd, v4l2_buffer *buffer) {
     if (ioctl(fd, VIDIOC_QBUF, buffer) < 0) {
         ERROR_PRINT("fd(%d) queue buffer(%u): %s\n", fd, buffer->type, strerror(errno));
         return false;
@@ -92,33 +91,33 @@ bool V4l2Util::QueueBuffer(int fd, v4l2_buffer *buffer) {
     return true;
 }
 
-bool V4l2Util::QueueBuffers(int fd, V4l2BufferGroup *gbuffer) {
+bool V4L2Util::QueueBuffers(int fd, V4L2BufferGroup *gbuffer) {
     for (int i = 0; i < gbuffer->num_buffers; i++) {
         v4l2_buffer *inner = &gbuffer->buffers[i].inner;
-        if (!V4l2Util::QueueBuffer(fd, inner)) {
+        if (!V4L2Util::QueueBuffer(fd, inner)) {
             return false;
         }
     }
     return true;
 }
 
-std::unordered_set<std::string> V4l2Util::GetDeviceSupportedFormats(const char *file) {
-    int fd = V4l2Util::OpenDevice(file);
+std::unordered_set<std::string> V4L2Util::GetDeviceSupportedFormats(const char *file) {
+    int fd = V4L2Util::OpenDevice(file);
     v4l2_fmtdesc fmtdesc = {0};
     fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     std::unordered_set<std::string> formats;
 
     while (ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
-        auto pixel_format = V4l2Util::FourccToString(fmtdesc.pixelformat);
+        auto pixel_format = V4L2Util::FourccToString(fmtdesc.pixelformat);
         formats.insert(pixel_format);
         fmtdesc.index++;
     }
-    V4l2Util::CloseDevice(fd);
+    V4L2Util::CloseDevice(fd);
 
     return formats;
 }
 
-bool V4l2Util::SubscribeEvent(int fd, uint32_t type) {
+bool V4L2Util::SubscribeEvent(int fd, uint32_t type) {
     v4l2_event_subscription sub = {};
     sub.type = type;
     if (ioctl(fd, VIDIOC_SUBSCRIBE_EVENT, &sub) < 0) {
@@ -128,7 +127,7 @@ bool V4l2Util::SubscribeEvent(int fd, uint32_t type) {
     return true;
 }
 
-bool V4l2Util::SetFps(int fd, v4l2_buf_type type, int fps) {
+bool V4L2Util::SetFps(int fd, v4l2_buf_type type, int fps) {
     struct v4l2_streamparm streamparms = {};
     streamparms.type = type;
     streamparms.parm.capture.timeperframe.numerator = 1;
@@ -140,14 +139,14 @@ bool V4l2Util::SetFps(int fd, v4l2_buf_type type, int fps) {
     return true;
 }
 
-bool V4l2Util::SetFormat(int fd, V4l2BufferGroup *gbuffer, int width, int height,
+bool V4L2Util::SetFormat(int fd, V4L2BufferGroup *gbuffer, int width, int height,
                          uint32_t pixel_format) {
     v4l2_format fmt = {};
     fmt.type = gbuffer->type;
     ioctl(fd, VIDIOC_G_FMT, &fmt);
 
     DEBUG_PRINT("fd(%d) original formats: %s(%dx%d)", gbuffer->fd,
-                V4l2Util::FourccToString(fmt.fmt.pix_mp.pixelformat).c_str(), fmt.fmt.pix_mp.width,
+                V4L2Util::FourccToString(fmt.fmt.pix_mp.pixelformat).c_str(), fmt.fmt.pix_mp.width,
                 fmt.fmt.pix_mp.height);
 
     if (width > 0 && height > 0) {
@@ -158,12 +157,12 @@ bool V4l2Util::SetFormat(int fd, V4l2BufferGroup *gbuffer, int width, int height
 
     if (ioctl(fd, VIDIOC_S_FMT, &fmt) < 0) {
         ERROR_PRINT("fd(%d) set format(%s) : %s", fd,
-                    V4l2Util::FourccToString(fmt.fmt.pix_mp.pixelformat).c_str(), strerror(errno));
+                    V4L2Util::FourccToString(fmt.fmt.pix_mp.pixelformat).c_str(), strerror(errno));
         return false;
     }
 
     DEBUG_PRINT("fd(%d) latest format: %s(%dx%d)", gbuffer->fd,
-                V4l2Util::FourccToString(fmt.fmt.pix_mp.pixelformat).c_str(), fmt.fmt.pix_mp.width,
+                V4L2Util::FourccToString(fmt.fmt.pix_mp.pixelformat).c_str(), fmt.fmt.pix_mp.width,
                 fmt.fmt.pix_mp.height);
 
     if (fmt.fmt.pix_mp.width != width || fmt.fmt.pix_mp.height != height) {
@@ -175,7 +174,7 @@ bool V4l2Util::SetFormat(int fd, V4l2BufferGroup *gbuffer, int width, int height
     return true;
 }
 
-bool V4l2Util::SetCtrl(int fd, uint32_t id, int32_t value) {
+bool V4L2Util::SetCtrl(int fd, uint32_t id, int32_t value) {
     v4l2_control ctrls = {};
     ctrls.id = id;
     ctrls.value = value;
@@ -186,7 +185,7 @@ bool V4l2Util::SetCtrl(int fd, uint32_t id, int32_t value) {
     return true;
 }
 
-bool V4l2Util::SetExtCtrl(int fd, uint32_t id, int32_t value) {
+bool V4L2Util::SetExtCtrl(int fd, uint32_t id, int32_t value) {
     v4l2_ext_controls ctrls = {};
     v4l2_ext_control ctrl = {};
 
@@ -206,7 +205,7 @@ bool V4l2Util::SetExtCtrl(int fd, uint32_t id, int32_t value) {
     return true;
 }
 
-bool V4l2Util::StreamOn(int fd, v4l2_buf_type type) {
+bool V4L2Util::StreamOn(int fd, v4l2_buf_type type) {
     if (ioctl(fd, VIDIOC_STREAMON, &type) < 0) {
         ERROR_PRINT("fd(%d) turn on stream: %s", fd, strerror(errno));
         return false;
@@ -214,7 +213,7 @@ bool V4l2Util::StreamOn(int fd, v4l2_buf_type type) {
     return true;
 }
 
-bool V4l2Util::StreamOff(int fd, v4l2_buf_type type) {
+bool V4L2Util::StreamOff(int fd, v4l2_buf_type type) {
     if (ioctl(fd, VIDIOC_STREAMOFF, &type) < 0) {
         ERROR_PRINT("fd(%d) turn off stream: %s", fd, strerror(errno));
         return false;
@@ -222,7 +221,7 @@ bool V4l2Util::StreamOff(int fd, v4l2_buf_type type) {
     return true;
 }
 
-void V4l2Util::UnMap(V4l2BufferGroup *gbuffer) {
+void V4L2Util::UnMap(V4L2BufferGroup *gbuffer) {
     for (int i = 0; i < gbuffer->num_buffers; i++) {
         if (gbuffer->buffers[i].dmafd != 0) {
             DEBUG_PRINT("close (%d) dmafd", gbuffer->buffers[i].dmafd);
@@ -236,9 +235,9 @@ void V4l2Util::UnMap(V4l2BufferGroup *gbuffer) {
     }
 }
 
-bool V4l2Util::MMap(int fd, V4l2BufferGroup *gbuffer) {
+bool V4L2Util::MMap(int fd, V4L2BufferGroup *gbuffer) {
     for (int i = 0; i < gbuffer->num_buffers; i++) {
-        V4l2Buffer *buffer = &gbuffer->buffers[i];
+        V4L2Buffer *buffer = &gbuffer->buffers[i];
         v4l2_buffer *inner = &buffer->inner;
         inner->type = gbuffer->type;
         inner->memory = V4L2_MEMORY_MMAP;
@@ -290,7 +289,7 @@ bool V4l2Util::MMap(int fd, V4l2BufferGroup *gbuffer) {
     return true;
 }
 
-bool V4l2Util::AllocateBuffer(int fd, V4l2BufferGroup *gbuffer, int num_buffers) {
+bool V4L2Util::AllocateBuffer(int fd, V4L2BufferGroup *gbuffer, int num_buffers) {
     gbuffer->num_buffers = num_buffers;
     gbuffer->buffers.resize(num_buffers);
 
@@ -308,7 +307,7 @@ bool V4l2Util::AllocateBuffer(int fd, V4l2BufferGroup *gbuffer, int num_buffers)
         return MMap(fd, gbuffer);
     } else if (gbuffer->memory == V4L2_MEMORY_DMABUF) {
         for (int i = 0; i < num_buffers; i++) {
-            V4l2Buffer *buffer = &gbuffer->buffers[i];
+            V4L2Buffer *buffer = &gbuffer->buffers[i];
             v4l2_buffer *inner = &buffer->inner;
             inner->type = gbuffer->type;
             inner->memory = V4L2_MEMORY_DMABUF;
@@ -321,9 +320,9 @@ bool V4l2Util::AllocateBuffer(int fd, V4l2BufferGroup *gbuffer, int num_buffers)
     return true;
 }
 
-bool V4l2Util::DeallocateBuffer(int fd, V4l2BufferGroup *gbuffer) {
+bool V4L2Util::DeallocateBuffer(int fd, V4L2BufferGroup *gbuffer) {
     if (gbuffer->memory == V4L2_MEMORY_MMAP) {
-        V4l2Util::UnMap(gbuffer);
+        V4L2Util::UnMap(gbuffer);
     }
 
     v4l2_requestbuffers req = {};

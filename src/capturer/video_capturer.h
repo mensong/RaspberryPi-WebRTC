@@ -26,24 +26,24 @@ class VideoCapturer {
 
     virtual VideoCapturer &SetControls(const int key, const int value) { return *this; };
 
-    std::shared_ptr<Observable<V4l2Buffer>> AsRawBufferObservable() {
+    std::shared_ptr<Observable<V4L2Buffer>> AsRawBufferObservable() {
         return raw_buffer_subject_.AsObservable();
     }
 
-    std::shared_ptr<Observable<rtc::scoped_refptr<V4l2FrameBuffer>>> AsFrameBufferObservable() {
+    std::shared_ptr<Observable<rtc::scoped_refptr<V4L2FrameBuffer>>> AsFrameBufferObservable() {
         return frame_buffer_subject_.AsObservable();
     }
 
   protected:
-    void NextRawBuffer(V4l2Buffer raw_buffer) { raw_buffer_subject_.Next(raw_buffer); }
+    void NextRawBuffer(V4L2Buffer raw_buffer) { raw_buffer_subject_.Next(raw_buffer); }
 
-    void NextFrameBuffer(rtc::scoped_refptr<V4l2FrameBuffer> frame_buffer) {
+    void NextFrameBuffer(rtc::scoped_refptr<V4L2FrameBuffer> frame_buffer) {
         frame_buffer_subject_.Next(frame_buffer);
     }
 
   private:
-    Subject<V4l2Buffer> raw_buffer_subject_;
-    Subject<rtc::scoped_refptr<V4l2FrameBuffer>> frame_buffer_subject_;
+    Subject<V4L2Buffer> raw_buffer_subject_;
+    Subject<rtc::scoped_refptr<V4L2FrameBuffer>> frame_buffer_subject_;
 };
 
 #endif

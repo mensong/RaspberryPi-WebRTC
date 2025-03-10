@@ -9,35 +9,35 @@
 
 #include "common/v4l2_utils.h"
 
-rtc::scoped_refptr<V4l2DmaTrackSource>
-V4l2DmaTrackSource::Create(std::shared_ptr<VideoCapturer> capturer) {
-    auto obj = rtc::make_ref_counted<V4l2DmaTrackSource>(std::move(capturer));
+rtc::scoped_refptr<V4L2DmaTrackSource>
+V4L2DmaTrackSource::Create(std::shared_ptr<VideoCapturer> capturer) {
+    auto obj = rtc::make_ref_counted<V4L2DmaTrackSource>(std::move(capturer));
     obj->StartTrack();
     return obj;
 }
 
-V4l2DmaTrackSource::V4l2DmaTrackSource(std::shared_ptr<VideoCapturer> capturer)
+V4L2DmaTrackSource::V4L2DmaTrackSource(std::shared_ptr<VideoCapturer> capturer)
     : ScaleTrackSource(capturer),
       is_dma_src_(capturer->is_dma_capture()),
       config_width_(capturer->width()),
       config_height_(capturer->height()) {}
 
-V4l2DmaTrackSource::~V4l2DmaTrackSource() { scaler.reset(); }
+V4L2DmaTrackSource::~V4L2DmaTrackSource() { scaler.reset(); }
 
-void V4l2DmaTrackSource::StartTrack() {
+void V4L2DmaTrackSource::StartTrack() {
     auto observer = capturer->AsFrameBufferObservable();
-    observer->Subscribe([this](rtc::scoped_refptr<V4l2FrameBuffer> frame_buffer) {
+    observer->Subscribe([this](rtc::scoped_refptr<V4L2FrameBuffer> frame_buffer) {
         OnFrameCaptured(frame_buffer->GetRawBuffer());
     });
 }
 
-void V4l2DmaTrackSource::OnFrameCaptured(V4l2Buffer decoded_buffer) {
+void V4L2DmaTrackSource::OnFrameCaptured(V4L2Buffer decoded_buffer) {
     const int64_t timestamp_us = rtc::TimeMicros();
     const int64_t translated_timestamp_us =
         timestamp_aligner.TranslateTimestamp(timestamp_us, rtc::TimeMicros());
 
     if (capturer->config().fixed_resolution) {
-        auto dst_buffer = V4l2FrameBuffer::Create(config_width_, config_height_, decoded_buffer,
+        auto dst_buffer = V4L2FrameBuffer::Create(config_width_, config_height_, decoded_buffer,
                                                   V4L2_PIX_FMT_YUV420);
         OnFrame(webrtc::VideoFrame::Builder()
                     .set_video_frame_buffer(dst_buffer)
@@ -55,12 +55,12 @@ void V4l2DmaTrackSource::OnFrameCaptured(V4l2Buffer decoded_buffer) {
             config_width_ = adapted_width;
             config_height_ = adapted_height;
             scaler =
-                V4l2Scaler::Create(width, height, config_width_, config_height_, is_dma_src_, true);
+                V4L2Scaler::Create(width, height, config_width_, config_height_, is_dma_src_, true);
         }
 
         scaler->EmplaceBuffer(
-            decoded_buffer, [this, translated_timestamp_us](V4l2Buffer scaled_buffer) {
-                auto dst_buffer = V4l2FrameBuffer::Create(config_width_, config_height_,
+            decoded_buffer, [this, translated_timestamp_us](V4L2Buffer scaled_buffer) {
+                auto dst_buffer = V4L2FrameBuffer::Create(config_width_, config_height_,
                                                           scaled_buffer, V4L2_PIX_FMT_YUV420);
 
                 OnFrame(webrtc::VideoFrame::Builder()

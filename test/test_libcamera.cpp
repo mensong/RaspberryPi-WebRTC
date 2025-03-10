@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     auto capturer = LibcameraCapturer::Create(args);
 
     auto observer = capturer->AsRawBufferObservable();
-    observer->Subscribe([&](V4l2Buffer buffer) {
+    observer->Subscribe([&](V4L2Buffer buffer) {
         if (i < images_nb) {
             WriteImage(buffer.start, buffer.length, ++i);
         } else {

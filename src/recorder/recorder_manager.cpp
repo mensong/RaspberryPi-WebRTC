@@ -100,7 +100,7 @@ RecorderManager::RecorderManager(Args config)
 
 void RecorderManager::SubscribeVideoSource(std::shared_ptr<VideoCapturer> video_src) {
     video_observer = video_src->AsRawBufferObservable();
-    video_observer->Subscribe([this](V4l2Buffer buffer) {
+    video_observer->Subscribe([this](V4L2Buffer buffer) {
         // waiting first keyframe to start recorders.
         if (!has_first_keyframe && ((buffer.flags & V4L2_BUF_FLAG_KEYFRAME) ||
                                     video_src_->format() != V4L2_PIX_FMT_H264)) {

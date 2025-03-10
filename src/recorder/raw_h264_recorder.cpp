@@ -34,8 +34,8 @@ void RawH264Recorder::PostStop() {
     abort = true;
 }
 
-void RawH264Recorder::Encode(rtc::scoped_refptr<V4l2FrameBuffer> frame_buffer) {
-    V4l2Buffer buffer((void *)frame_buffer->Data(), frame_buffer->size(), frame_buffer->flags(),
+void RawH264Recorder::Encode(rtc::scoped_refptr<V4L2FrameBuffer> frame_buffer) {
+    V4L2Buffer buffer((void *)frame_buffer->Data(), frame_buffer->size(), frame_buffer->flags(),
                       frame_buffer->timestamp());
 
     if (buffer.flags & V4L2_BUF_FLAG_KEYFRAME && !has_first_keyframe_) {
@@ -50,7 +50,7 @@ void RawH264Recorder::Encode(rtc::scoped_refptr<V4l2FrameBuffer> frame_buffer) {
     }
 }
 
-bool RawH264Recorder::CheckNALUnits(const V4l2Buffer &buffer) {
+bool RawH264Recorder::CheckNALUnits(const V4L2Buffer &buffer) {
     if (buffer.start == nullptr || buffer.length < 4) {
         return false;
     }

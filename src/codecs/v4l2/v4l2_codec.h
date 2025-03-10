@@ -3,23 +3,22 @@
 
 #include "common/thread_safe_queue.h"
 #include "common/v4l2_utils.h"
-
 #include "common/worker.h"
 
-class V4l2Codec {
+class V4L2Codec {
   public:
-    V4l2Codec();
-    ~V4l2Codec();
-    void EmplaceBuffer(V4l2Buffer &buffer, std::function<void(V4l2Buffer &)> on_capture);
+    V4L2Codec();
+    ~V4L2Codec();
+    void EmplaceBuffer(V4L2Buffer &buffer, std::function<void(V4L2Buffer &)> on_capture);
 
   protected:
     int fd_;
-    V4l2BufferGroup output_;
-    V4l2BufferGroup capture_;
+    V4L2BufferGroup output_;
+    V4L2BufferGroup capture_;
     virtual void HandleEvent(){};
 
     bool Open(const char *file_name);
-    bool PrepareBuffer(V4l2BufferGroup *gbuffer, int width, int height, uint32_t pix_fmt,
+    bool PrepareBuffer(V4L2BufferGroup *gbuffer, int width, int height, uint32_t pix_fmt,
                        v4l2_buf_type type, v4l2_memory memory, int buffer_num,
                        bool has_dmafd = false);
     void Start();
@@ -28,7 +27,7 @@ class V4l2Codec {
     std::atomic<bool> abort_;
     std::unique_ptr<Worker> worker_;
     ThreadSafeQueue<int> output_buffer_index_;
-    ThreadSafeQueue<std::function<void(V4l2Buffer &)>> capturing_tasks_;
+    ThreadSafeQueue<std::function<void(V4L2Buffer &)>> capturing_tasks_;
     const char *file_name_;
     bool CaptureBuffer();
 };

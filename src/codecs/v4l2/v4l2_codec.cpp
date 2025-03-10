@@ -1,45 +1,45 @@
-#include "v4l2_codecs/v4l2_codec.h"
+#include "codecs/v4l2/v4l2_codec.h"
 #include "common/logging.h"
 #include <cstring>
 #include <thread>
 
-V4l2Codec::V4l2Codec()
+V4L2Codec::V4L2Codec()
     : fd_(0),
       abort_(false) {}
 
-V4l2Codec::~V4l2Codec() {
+V4L2Codec::~V4L2Codec() {
     abort_ = true;
     worker_.reset();
-    V4l2Util::StreamOff(fd_, output_.type);
-    V4l2Util::StreamOff(fd_, capture_.type);
+    V4L2Util::StreamOff(fd_, output_.type);
+    V4L2Util::StreamOff(fd_, capture_.type);
 
-    V4l2Util::DeallocateBuffer(fd_, &output_);
-    V4l2Util::DeallocateBuffer(fd_, &capture_);
+    V4L2Util::DeallocateBuffer(fd_, &output_);
+    V4L2Util::DeallocateBuffer(fd_, &capture_);
 
-    V4l2Util::CloseDevice(fd_);
+    V4L2Util::CloseDevice(fd_);
 }
 
-bool V4l2Codec::Open(const char *file_name) {
+bool V4L2Codec::Open(const char *file_name) {
     file_name_ = file_name;
-    fd_ = V4l2Util::OpenDevice(file_name);
+    fd_ = V4L2Util::OpenDevice(file_name);
     if (fd_ < 0) {
         return false;
     }
     return true;
 }
 
-bool V4l2Codec::PrepareBuffer(V4l2BufferGroup *gbuffer, int width, int height, uint32_t pix_fmt,
+bool V4L2Codec::PrepareBuffer(V4L2BufferGroup *gbuffer, int width, int height, uint32_t pix_fmt,
                               v4l2_buf_type type, v4l2_memory memory, int buffer_num,
                               bool has_dmafd) {
-    if (!V4l2Util::InitBuffer(fd_, gbuffer, type, memory, has_dmafd)) {
+    if (!V4L2Util::InitBuffer(fd_, gbuffer, type, memory, has_dmafd)) {
         return false;
     }
 
-    if (!V4l2Util::SetFormat(fd_, gbuffer, width, height, pix_fmt)) {
+    if (!V4L2Util::SetFormat(fd_, gbuffer, width, height, pix_fmt)) {
         return false;
     }
 
-    if (!V4l2Util::AllocateBuffer(fd_, gbuffer, buffer_num)) {
+    if (!V4L2Util::AllocateBuffer(fd_, gbuffer, buffer_num)) {
         return false;
     }
 
@@ -48,7 +48,7 @@ bool V4l2Codec::PrepareBuffer(V4l2BufferGroup *gbuffer, int width, int height, u
             output_buffer_index_.push(i);
         }
     } else if (type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE) {
-        if (!V4l2Util::QueueBuffers(fd_, gbuffer)) {
+        if (!V4L2Util::QueueBuffers(fd_, gbuffer)) {
             return false;
         }
     }
@@ -56,7 +56,7 @@ bool V4l2Codec::PrepareBuffer(V4l2BufferGroup *gbuffer, int width, int height, u
     return true;
 }
 
-void V4l2Codec::Start() {
+void V4L2Codec::Start() {
     abort_ = false;
     worker_ = std::make_unique<Worker>(file_name_ + std::to_string(pthread_self()), [this]() {
         CaptureBuffer();
@@ -64,7 +64,7 @@ void V4l2Codec::Start() {
     worker_->Run();
 }
 
-void V4l2Codec::EmplaceBuffer(V4l2Buffer &buffer, std::function<void(V4l2Buffer &)> on_capture) {
+void V4L2Codec::EmplaceBuffer(V4L2Buffer &buffer, std::function<void(V4L2Buffer &)> on_capture) {
     auto item = output_buffer_index_.pop();
     if (!item) {
         return;
@@ -80,7 +80,7 @@ void V4l2Codec::EmplaceBuffer(V4l2Buffer &buffer, std::function<void(V4l2Buffer 
         memcpy((uint8_t *)output_.buffers[index].start, (uint8_t *)buffer.start, buffer.length);
     }
 
-    if (!V4l2Util::QueueBuffer(fd_, &output_.buffers[index].inner)) {
+    if (!V4L2Util::QueueBuffer(fd_, &output_.buffers[index].inner)) {
         ERROR_PRINT("QueueBuffer V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE. fd(%d) at index %d", fd_,
                     index);
         output_buffer_index_.push(index);
@@ -90,7 +90,7 @@ void V4l2Codec::EmplaceBuffer(V4l2Buffer &buffer, std::function<void(V4l2Buffer 
     capturing_tasks_.push(on_capture);
 }
 
-bool V4l2Codec::CaptureBuffer() {
+bool V4L2Codec::CaptureBuffer() {
 
     if (abort_) {
         return false;
@@ -122,7 +122,7 @@ bool V4l2Codec::CaptureBuffer() {
         buf.length = 1;
         buf.m.planes = &planes;
         buf.type = output_.type;
-        if (!V4l2Util::DequeueBuffer(fd_, &buf)) {
+        if (!V4L2Util::DequeueBuffer(fd_, &buf)) {
             return false;
         }
         output_buffer_index_.push(buf.index);
@@ -133,11 +133,11 @@ bool V4l2Codec::CaptureBuffer() {
         buf.length = 1;
         buf.m.planes = &planes;
         buf.type = capture_.type;
-        if (!V4l2Util::DequeueBuffer(fd_, &buf)) {
+        if (!V4L2Util::DequeueBuffer(fd_, &buf)) {
             return false;
         }
 
-        V4l2Buffer buffer;
+        V4L2Buffer buffer;
         buffer.start = capture_.buffers[buf.index].start;
         buffer.length = buf.m.planes[0].bytesused;
         buffer.dmafd = capture_.buffers[buf.index].dmafd;
@@ -153,7 +153,7 @@ bool V4l2Codec::CaptureBuffer() {
             task(buffer);
         }
 
-        if (!V4l2Util::QueueBuffer(fd_, &capture_.buffers[buf.index].inner)) {
+        if (!V4L2Util::QueueBuffer(fd_, &capture_.buffers[buf.index].inner)) {
             return false;
         }
     }

@@ -1,12 +1,11 @@
 #include "customized_video_encoder_factory.h"
+#include "codecs/v4l2/v4l2_h264_encoder.h"
 
 #include <modules/video_coding/codecs/av1/av1_svc_config.h>
 #include <modules/video_coding/codecs/av1/libaom_av1_encoder.h>
 #include <modules/video_coding/codecs/h264/include/h264.h>
 #include <modules/video_coding/codecs/vp8/include/vp8.h>
 #include <modules/video_coding/codecs/vp9/include/vp9.h>
-
-#include "v4l2_codecs/v4l2_h264_encoder.h"
 
 std::unique_ptr<webrtc::VideoEncoderFactory> CreateCustomizedVideoEncoderFactory(Args args) {
     return std::make_unique<CustomizedVideoEncoderFactory>(args);
@@ -49,7 +48,7 @@ std::unique_ptr<webrtc::VideoEncoder>
 CustomizedVideoEncoderFactory::CreateVideoEncoder(const webrtc::SdpVideoFormat &format) {
     if (absl::EqualsIgnoreCase(format.name, cricket::kH264CodecName)) {
         if (args_.hw_accel) {
-            return V4l2H264Encoder::Create(args_);
+            return V4L2H264Encoder::Create(args_);
         } else {
             return webrtc::H264Encoder::Create(cricket::VideoCodec(format));
         }

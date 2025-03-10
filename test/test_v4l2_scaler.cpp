@@ -1,6 +1,6 @@
 #include "args.h"
 #include "capturer/v4l2_capturer.h"
-#include "v4l2_codecs/v4l2_scaler.h"
+#include "codecs/v4l2/v4l2_scaler.h"
 
 #include <condition_variable>
 #include <fcntl.h>
@@ -8,7 +8,7 @@
 #include <string>
 #include <unistd.h>
 
-void WriteImage(V4l2Buffer buffer, int index) {
+void WriteImage(V4L2Buffer buffer, int index) {
     printf("Dequeued buffer index: %d\n"
            "  bytesused: %d\n",
            index, buffer.length);
@@ -29,18 +29,14 @@ int main(int argc, char *argv[]) {
     bool is_finished = false;
     int images_nb = 0;
     int record_sec = 1;
-    Args args{.fps = 15,
-              .width = 640,
-              .height = 480,
-              .format = V4L2_PIX_FMT_YUV420,
-              .device = "/dev/video0"};
+    Args args{.fps = 15, .width = 640, .height = 480, .format = V4L2_PIX_FMT_YUV420};
 
-    auto scaler = V4l2Scaler::Create(args.width, args.height, 320, 240, false, false);
+    auto scaler = V4L2Scaler::Create(args.width, args.height, 320, 240, false, false);
 
-    auto capturer = V4l2Capturer::Create(args);
+    auto capturer = V4L2Capturer::Create(args);
     auto observer = capturer->AsRawBufferObservable();
-    observer->Subscribe([&](V4l2Buffer buffer) {
-        scaler->EmplaceBuffer(buffer, [&](V4l2Buffer scaled_buffer) {
+    observer->Subscribe([&](V4L2Buffer buffer) {
+        scaler->EmplaceBuffer(buffer, [&](V4L2Buffer scaled_buffer) {
             if (is_finished) {
                 return;
             }

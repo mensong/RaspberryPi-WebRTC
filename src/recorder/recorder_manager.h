@@ -43,7 +43,7 @@ class RecorderManager {
     std::string record_path;
     AVFormatContext *fmt_ctx;
     bool has_first_keyframe;
-    std::shared_ptr<Observable<V4l2Buffer>> video_observer;
+    std::shared_ptr<Observable<V4L2Buffer>> video_observer;
     std::shared_ptr<Observable<PaBuffer>> audio_observer;
     std::unique_ptr<VideoRecorder> video_recorder;
     std::unique_ptr<AudioRecorder> audio_recorder;
