@@ -1,6 +1,6 @@
 #include "args.h"
 #include "capturer/v4l2_capturer.h"
-#include "v4l2_codecs/v4l2_encoder.h"
+#include "codecs/v4l2/v4l2_encoder.h"
 
 #include <chrono>
 #include <condition_variable>
@@ -16,24 +16,20 @@ int main(int argc, char *argv[]) {
     bool has_first_keyframe_ = false;
     int images_nb = 0;
     int record_sec = 10;
-    Args args{.fps = 30,
-              .width = 1280,
-              .height = 960,
-              .hw_accel = true,
-              .format = V4L2_PIX_FMT_MJPEG,
-              .device = "/dev/video0"};
+    Args args{
+        .fps = 30, .width = 1280, .height = 960, .hw_accel = true, .format = V4L2_PIX_FMT_MJPEG};
 
-    auto capturer = V4l2Capturer::Create(args);
+    auto capturer = V4L2Capturer::Create(args);
     auto observer = capturer->AsFrameBufferObservable();
 
-    auto encoder = V4l2Encoder::Create(args.width, args.height, true);
+    auto encoder = V4L2Encoder::Create(args.width, args.height, true);
 
     int cam_frame_count = 0;
     auto cam_start_time = std::chrono::steady_clock::now();
     int frame_count = 0;
     auto start_time = std::chrono::steady_clock::now();
 
-    observer->Subscribe([&](rtc::scoped_refptr<V4l2FrameBuffer> frame_buffer) {
+    observer->Subscribe([&](rtc::scoped_refptr<V4L2FrameBuffer> frame_buffer) {
         auto buffer = frame_buffer->GetRawBuffer();
 
         if (frame_buffer->format() == V4L2_PIX_FMT_H264 && !has_first_keyframe_) {
@@ -58,7 +54,7 @@ int main(int argc, char *argv[]) {
             cam_frame_count = 0;
         }
 
-        encoder->EmplaceBuffer(buffer, [&](V4l2Buffer &encoded_buffer) {
+        encoder->EmplaceBuffer(buffer, [&](V4L2Buffer &encoded_buffer) {
             if (is_finished) {
                 return;
             }

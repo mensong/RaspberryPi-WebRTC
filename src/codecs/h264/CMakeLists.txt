@@ -1,4 +1,4 @@
-project(codec_h264)
+project(h264_codecs)
 
 aux_source_directory(${PROJECT_SOURCE_DIR} H264_FILES)
 

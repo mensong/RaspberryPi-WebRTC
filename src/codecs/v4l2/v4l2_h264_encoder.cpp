@@ -1,18 +1,18 @@
-#include "v4l2_codecs/v4l2_h264_encoder.h"
+#include "codecs/v4l2/v4l2_h264_encoder.h"
 #include "common/logging.h"
 #include "common/v4l2_frame_buffer.h"
 
-std::unique_ptr<webrtc::VideoEncoder> V4l2H264Encoder::Create(Args args) {
-    return std::make_unique<V4l2H264Encoder>(args);
+std::unique_ptr<webrtc::VideoEncoder> V4L2H264Encoder::Create(Args args) {
+    return std::make_unique<V4L2H264Encoder>(args);
 }
 
-V4l2H264Encoder::V4l2H264Encoder(Args args)
+V4L2H264Encoder::V4L2H264Encoder(Args args)
     : fps_adjuster_(args.fps),
       is_dma_(!args.fixed_resolution),
       bitrate_adjuster_(.85, 1),
       callback_(nullptr) {}
 
-int32_t V4l2H264Encoder::InitEncode(const webrtc::VideoCodec *codec_settings,
+int32_t V4L2H264Encoder::InitEncode(const webrtc::VideoCodec *codec_settings,
                                     const VideoEncoder::Settings &settings) {
     codec_ = *codec_settings;
     width_ = codec_settings->width;
@@ -26,26 +26,26 @@ int32_t V4l2H264Encoder::InitEncode(const webrtc::VideoCodec *codec_settings,
         return WEBRTC_VIDEO_CODEC_ERROR;
     }
 
-    encoder_ = V4l2Encoder::Create(width_, height_, is_dma_);
+    encoder_ = V4L2Encoder::Create(width_, height_, is_dma_);
 
     return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t V4l2H264Encoder::RegisterEncodeCompleteCallback(webrtc::EncodedImageCallback *callback) {
+int32_t V4L2H264Encoder::RegisterEncodeCompleteCallback(webrtc::EncodedImageCallback *callback) {
     callback_ = callback;
     return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t V4l2H264Encoder::Release() {
+int32_t V4L2H264Encoder::Release() {
     encoder_.reset();
     return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t V4l2H264Encoder::Encode(const webrtc::VideoFrame &frame,
+int32_t V4L2H264Encoder::Encode(const webrtc::VideoFrame &frame,
                                 const std::vector<webrtc::VideoFrameType> *frame_types) {
     if (frame_types) {
         if ((*frame_types)[0] == webrtc::VideoFrameType::kVideoFrameKey) {
-            V4l2Util::SetExtCtrl(encoder_->GetFd(), V4L2_CID_MPEG_VIDEO_FORCE_KEY_FRAME, 1);
+            V4L2Util::SetExtCtrl(encoder_->GetFd(), V4L2_CID_MPEG_VIDEO_FORCE_KEY_FRAME, 1);
         } else if ((*frame_types)[0] == webrtc::VideoFrameType::kEmptyFrame) {
             return WEBRTC_VIDEO_CODEC_OK;
         }
@@ -53,9 +53,9 @@ int32_t V4l2H264Encoder::Encode(const webrtc::VideoFrame &frame,
 
     rtc::scoped_refptr<webrtc::VideoFrameBuffer> frame_buffer = frame.video_frame_buffer();
 
-    V4l2Buffer src_buffer;
+    V4L2Buffer src_buffer;
     if (frame_buffer->type() == webrtc::VideoFrameBuffer::Type::kNative) {
-        V4l2FrameBuffer *raw_buffer = static_cast<V4l2FrameBuffer *>(frame_buffer.get());
+        V4L2FrameBuffer *raw_buffer = static_cast<V4L2FrameBuffer *>(frame_buffer.get());
         src_buffer = raw_buffer->GetRawBuffer();
     } else {
         auto i420_buffer = frame_buffer->GetI420();
@@ -67,14 +67,14 @@ int32_t V4l2H264Encoder::Encode(const webrtc::VideoFrame &frame,
         src_buffer.length = i420_buffer_size;
     }
 
-    encoder_->EmplaceBuffer(src_buffer, [this, frame](V4l2Buffer encoded_buffer) {
+    encoder_->EmplaceBuffer(src_buffer, [this, frame](V4L2Buffer encoded_buffer) {
         SendFrame(frame, encoded_buffer);
     });
 
     return WEBRTC_VIDEO_CODEC_OK;
 }
 
-void V4l2H264Encoder::SetRates(const RateControlParameters &parameters) {
+void V4L2H264Encoder::SetRates(const RateControlParameters &parameters) {
     if (parameters.bitrate.get_sum_bps() <= 0 || parameters.framerate_fps <= 0) {
         return;
     }
@@ -85,7 +85,7 @@ void V4l2H264Encoder::SetRates(const RateControlParameters &parameters) {
     encoder_->SetBitrate(bitrate_adjuster_.GetAdjustedBitrateBps());
 }
 
-webrtc::VideoEncoder::EncoderInfo V4l2H264Encoder::GetEncoderInfo() const {
+webrtc::VideoEncoder::EncoderInfo V4L2H264Encoder::GetEncoderInfo() const {
     EncoderInfo info;
     info.supports_native_handle = true;
     info.is_hardware_accelerated = true;
@@ -94,7 +94,7 @@ webrtc::VideoEncoder::EncoderInfo V4l2H264Encoder::GetEncoderInfo() const {
     return info;
 }
 
-void V4l2H264Encoder::SendFrame(const webrtc::VideoFrame &frame, V4l2Buffer &encoded_buffer) {
+void V4L2H264Encoder::SendFrame(const webrtc::VideoFrame &frame, V4L2Buffer &encoded_buffer) {
     auto encoded_image_buffer =
         webrtc::EncodedImageBuffer::Create((uint8_t *)encoded_buffer.start, encoded_buffer.length);
 

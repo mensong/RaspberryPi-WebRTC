@@ -1,6 +1,6 @@
 #include "args.h"
 #include "capturer/v4l2_capturer.h"
-#include "v4l2_codecs/v4l2_decoder.h"
+#include "codecs/v4l2/v4l2_decoder.h"
 
 #include <condition_variable>
 #include <fcntl.h>
@@ -25,20 +25,16 @@ int main(int argc, char *argv[]) {
     bool is_finished = false;
     int images_nb = 0;
     int record_sec = 1;
-    Args args{.fps = 15,
-              .width = 640,
-              .height = 480,
-              .hw_accel = false,
-              .format = V4L2_PIX_FMT_MJPEG,
-              .device = "/dev/video0"};
+    Args args{
+        .fps = 15, .width = 640, .height = 480, .hw_accel = false, .format = V4L2_PIX_FMT_MJPEG};
 
-    auto capturer = V4l2Capturer::Create(args);
-    auto decoder = V4l2Decoder::Create(args.width, args.height, capturer->format(), false);
+    auto capturer = V4L2Capturer::Create(args);
+    auto decoder = V4L2Decoder::Create(args.width, args.height, capturer->format(), false);
 
     auto observer = capturer->AsRawBufferObservable();
-    observer->Subscribe([&](V4l2Buffer buffer) {
+    observer->Subscribe([&](V4L2Buffer buffer) {
         printf("Camera buffer: %u\n", buffer.length);
-        decoder->EmplaceBuffer(buffer, [&](V4l2Buffer decoded_buffer) {
+        decoder->EmplaceBuffer(buffer, [&](V4L2Buffer decoded_buffer) {
             if (is_finished) {
                 return;
             }

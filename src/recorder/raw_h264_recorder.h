@@ -10,10 +10,10 @@ class RawH264Recorder : public VideoRecorder {
     ~RawH264Recorder();
     void PreStart() override;
     void PostStop() override;
-    bool CheckNALUnits(const V4l2Buffer &buffer);
+    bool CheckNALUnits(const V4L2Buffer &buffer);
 
   protected:
-    void Encode(rtc::scoped_refptr<V4l2FrameBuffer> frame_buffer) override;
+    void Encode(rtc::scoped_refptr<V4L2FrameBuffer> frame_buffer) override;
 
   private:
     bool has_sps_;

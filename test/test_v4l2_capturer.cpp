@@ -7,7 +7,7 @@
 #include <mutex>
 #include <unistd.h>
 
-void WriteImage(V4l2Buffer buffer, int index) {
+void WriteImage(V4L2Buffer buffer, int index) {
     printf("Dequeue buffer index: %d\n"
            "  bytesused: %d\n",
            index, buffer.length);
@@ -34,9 +34,9 @@ int main(int argc, char *argv[]) {
               .format = V4L2_PIX_FMT_MJPEG,
               .device = "/dev/video0"};
 
-    auto capturer = V4l2Capturer::Create(args);
+    auto capturer = V4L2Capturer::Create(args);
     auto observer = capturer->AsRawBufferObservable();
-    observer->Subscribe([&](V4l2Buffer buffer) {
+    observer->Subscribe([&](V4L2Buffer buffer) {
         if (i < images_nb) {
             WriteImage(buffer, ++i);
         } else {

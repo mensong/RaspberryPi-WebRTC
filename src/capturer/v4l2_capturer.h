@@ -5,18 +5,18 @@
 
 #include "args.h"
 #include "capturer/video_capturer.h"
+#include "codecs/v4l2/v4l2_decoder.h"
 #include "common/interface/subject.h"
 #include "common/v4l2_frame_buffer.h"
 #include "common/v4l2_utils.h"
 #include "common/worker.h"
-#include "v4l2_codecs/v4l2_decoder.h"
 
-class V4l2Capturer : public VideoCapturer {
+class V4L2Capturer : public VideoCapturer {
   public:
-    static std::shared_ptr<V4l2Capturer> Create(Args args);
+    static std::shared_ptr<V4L2Capturer> Create(Args args);
 
-    V4l2Capturer(Args args);
-    ~V4l2Capturer();
+    V4L2Capturer(Args args);
+    ~V4L2Capturer();
     int fps() const override;
     int width() const override;
     int height() const override;
@@ -36,16 +36,16 @@ class V4l2Capturer : public VideoCapturer {
     bool has_first_keyframe_;
     uint32_t format_;
     Args config_;
-    V4l2BufferGroup capture_;
+    V4L2BufferGroup capture_;
     std::unique_ptr<Worker> worker_;
-    std::unique_ptr<V4l2Decoder> decoder_;
+    std::unique_ptr<V4L2Decoder> decoder_;
 
-    rtc::scoped_refptr<V4l2FrameBuffer> frame_buffer_;
-    void NextBuffer(V4l2Buffer &raw_buffer);
+    rtc::scoped_refptr<V4L2FrameBuffer> frame_buffer_;
+    void NextBuffer(V4L2Buffer &raw_buffer);
 
-    V4l2Capturer &SetFormat(int width, int height);
-    V4l2Capturer &SetFps(int fps = 30);
-    V4l2Capturer &SetRotation(int angle);
+    V4L2Capturer &SetFormat(int width, int height);
+    V4L2Capturer &SetFps(int fps = 30);
+    V4L2Capturer &SetRotation(int angle);
 
     void Init(int deviceId);
     bool IsCompressedFormat() const;

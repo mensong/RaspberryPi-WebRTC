@@ -1,6 +1,8 @@
 #ifndef V4L2_FRAME_BUFFER_H_
 #define V4L2_FRAME_BUFFER_H_
 
+#include "common/v4l2_utils.h"
+
 #include <linux/videodev2.h>
 #include <vector>
 
@@ -9,13 +11,11 @@
 #include <common_video/include/video_frame_buffer.h>
 #include <rtc_base/memory/aligned_malloc.h>
 
-#include "common/v4l2_utils.h"
-
-class V4l2FrameBuffer : public webrtc::VideoFrameBuffer {
+class V4L2FrameBuffer : public webrtc::VideoFrameBuffer {
   public:
-    static rtc::scoped_refptr<V4l2FrameBuffer> Create(int width, int height, int size,
+    static rtc::scoped_refptr<V4L2FrameBuffer> Create(int width, int height, int size,
                                                       uint32_t format);
-    static rtc::scoped_refptr<V4l2FrameBuffer> Create(int width, int height, V4l2Buffer buffer,
+    static rtc::scoped_refptr<V4L2FrameBuffer> Create(int width, int height, V4L2Buffer buffer,
                                                       uint32_t format);
 
     Type type() const override;
@@ -30,12 +30,12 @@ class V4l2FrameBuffer : public webrtc::VideoFrameBuffer {
 
     void CopyBufferData();
     const void *Data() const;
-    V4l2Buffer GetRawBuffer();
+    V4L2Buffer GetRawBuffer();
 
   protected:
-    V4l2FrameBuffer(int width, int height, int size, uint32_t format);
-    V4l2FrameBuffer(int width, int height, V4l2Buffer buffer, uint32_t format);
-    ~V4l2FrameBuffer() override;
+    V4L2FrameBuffer(int width, int height, int size, uint32_t format);
+    V4L2FrameBuffer(int width, int height, V4L2Buffer buffer, uint32_t format);
+    ~V4L2FrameBuffer() override;
 
   private:
     const int width_;
@@ -45,7 +45,7 @@ class V4l2FrameBuffer : public webrtc::VideoFrameBuffer {
     unsigned int flags_;
     bool is_buffer_copied;
     timeval timestamp_;
-    V4l2Buffer buffer_;
+    V4L2Buffer buffer_;
     const std::unique_ptr<uint8_t, webrtc::AlignedFreeDeleter> data_;
 };
 

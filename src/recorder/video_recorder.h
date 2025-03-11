@@ -9,35 +9,35 @@ extern "C" {
 }
 
 #include "args.h"
+#include "codecs/v4l2/v4l2_decoder.h"
 #include "common/thread_safe_queue.h"
 #include "common/v4l2_frame_buffer.h"
 #include "recorder/recorder.h"
-#include "v4l2_codecs/v4l2_decoder.h"
 
-class VideoRecorder : public Recorder<V4l2Buffer> {
+class VideoRecorder : public Recorder<V4L2Buffer> {
   public:
     VideoRecorder(Args config, std::string encoder_name);
     virtual ~VideoRecorder(){};
-    void OnBuffer(V4l2Buffer &buffer) override;
+    void OnBuffer(V4L2Buffer &buffer) override;
     void PostStop() override;
 
   protected:
     Args config;
     std::atomic<bool> abort;
     std::string encoder_name;
-    ThreadSafeQueue<rtc::scoped_refptr<V4l2FrameBuffer>> frame_buffer_queue;
+    ThreadSafeQueue<rtc::scoped_refptr<V4L2FrameBuffer>> frame_buffer_queue;
 
     AVRational frame_rate;
 
-    virtual void Encode(rtc::scoped_refptr<V4l2FrameBuffer> frame_buffer) = 0;
+    virtual void Encode(rtc::scoped_refptr<V4L2FrameBuffer> frame_buffer) = 0;
 
     bool ConsumeBuffer() override;
-    void OnEncoded(V4l2Buffer &buffer);
+    void OnEncoded(V4L2Buffer &buffer);
     void SetBaseTimestamp(struct timeval time);
 
   private:
     struct timeval base_time_;
-    std::unique_ptr<V4l2Decoder> image_decoder_;
+    std::unique_ptr<V4L2Decoder> image_decoder_;
 
     void InitializeEncoderCtx(AVCodecContext *&encoder) override;
 };

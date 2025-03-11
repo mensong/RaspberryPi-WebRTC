@@ -1,28 +1,28 @@
-#include "codec/h264/h264_encoder.h"
+#include "codecs/h264/openh264_encoder.h"
 
 #include "common/logging.h"
 #include "common/utils.h"
 
-std::unique_ptr<H264Encoder> H264Encoder::Create(Args args) {
-    auto ptr = std::make_unique<H264Encoder>(args);
+std::unique_ptr<Openh264Encoder> Openh264Encoder::Create(Args args) {
+    auto ptr = std::make_unique<Openh264Encoder>(args);
     ptr->Init();
     return ptr;
 }
 
-H264Encoder::H264Encoder(Args args)
+Openh264Encoder::Openh264Encoder(Args args)
     : fps_(args.fps),
       width_(args.width),
       height_(args.height),
       bitrate_(width_ * height_ * fps_ * 0.1),
       encoder_(nullptr) {}
 
-H264Encoder::~H264Encoder() {
+Openh264Encoder::~Openh264Encoder() {
     encoder_->Uninitialize();
     WelsDestroySVCEncoder(encoder_);
     DEBUG_PRINT("sw h264 encode was released!\n");
 }
 
-void H264Encoder::Init() {
+void Openh264Encoder::Init() {
     int rv = WelsCreateSVCEncoder(&encoder_);
     if (rv != 0) {
         ERROR_PRINT("Failed to create OpenH264 encoder.");
@@ -58,8 +58,8 @@ void H264Encoder::Init() {
     }
 }
 
-void H264Encoder::Encode(rtc::scoped_refptr<webrtc::I420BufferInterface> frame_buffer,
-                         std::function<void(uint8_t *, int)> on_capture) {
+void Openh264Encoder::Encode(rtc::scoped_refptr<webrtc::I420BufferInterface> frame_buffer,
+                             std::function<void(uint8_t *, int)> on_capture) {
     src_pic_ = {0};
     src_pic_.iPicWidth = width_;
     src_pic_.iPicHeight = height_;

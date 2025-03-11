@@ -25,10 +25,10 @@ void VideoRecorder::InitializeEncoderCtx(AVCodecContext *&encoder) {
     encoder->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 }
 
-void VideoRecorder::OnBuffer(V4l2Buffer &buffer) {
+void VideoRecorder::OnBuffer(V4L2Buffer &buffer) {
     if (frame_buffer_queue.size() < 8) {
-        rtc::scoped_refptr<V4l2FrameBuffer> frame_buffer(
-            V4l2FrameBuffer::Create(config.width, config.height, buffer, config.format));
+        rtc::scoped_refptr<V4L2FrameBuffer> frame_buffer(
+            V4L2FrameBuffer::Create(config.width, config.height, buffer, config.format));
         frame_buffer->CopyBufferData();
         frame_buffer_queue.push(frame_buffer);
     }
@@ -38,7 +38,7 @@ void VideoRecorder::PostStop() { abort = true; }
 
 void VideoRecorder::SetBaseTimestamp(struct timeval time) { base_time_ = time; }
 
-void VideoRecorder::OnEncoded(V4l2Buffer &buffer) {
+void VideoRecorder::OnEncoded(V4L2Buffer &buffer) {
     AVPacket *pkt = av_packet_alloc();
     pkt->data = static_cast<uint8_t *>(buffer.start);
     pkt->size = buffer.length;

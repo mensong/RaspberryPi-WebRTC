@@ -1,11 +1,11 @@
 #ifndef V4L2_SCALER_H_
 #define V4L2_SCALER_H_
 
-#include "v4l2_codecs/v4l2_codec.h"
+#include "codecs/v4l2/v4l2_codec.h"
 
-class V4l2Scaler : public V4l2Codec {
+class V4L2Scaler : public V4L2Codec {
   public:
-    static std::unique_ptr<V4l2Scaler> Create(int src_width, int src_height, int dst_width,
+    static std::unique_ptr<V4L2Scaler> Create(int src_width, int src_height, int dst_width,
                                               int dst_height, bool is_dma_src, bool is_dma_dst);
 
   private:

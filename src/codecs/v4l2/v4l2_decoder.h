@@ -1,11 +1,11 @@
 #ifndef V4L2_DECODER_H_
 #define V4L2_DECODER_H_
 
-#include "v4l2_codecs/v4l2_codec.h"
+#include "codecs/v4l2/v4l2_codec.h"
 
-class V4l2Decoder : public V4l2Codec {
+class V4L2Decoder : public V4L2Codec {
   public:
-    static std::unique_ptr<V4l2Decoder> Create(int width, int height, uint32_t src_pix_fmt,
+    static std::unique_ptr<V4L2Decoder> Create(int width, int height, uint32_t src_pix_fmt,
                                                bool is_dma_dst);
 
   protected:
