@@ -80,6 +80,13 @@ elseif(BUILD_TEST STREQUAL "mqtt")
         Threads::Threads
         ${MOSQUITTO_LIBS}
     )
+elseif(BUILD_TEST STREQUAL "websocket")
+    add_executable(test_websocket test/test_websocket.cpp)
+
+    target_link_libraries(test_websocket
+        ssl
+        crypto
+    )
 elseif(BUILD_TEST STREQUAL "openh264")
     add_executable(test_openh264 test/test_openh264.cpp)
     target_link_libraries(test_openh264
