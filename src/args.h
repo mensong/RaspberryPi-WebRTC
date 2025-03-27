@@ -21,6 +21,7 @@ struct Args {
     bool use_libcamera = false;
     bool use_mqtt = false;
     bool use_whep = false;
+    bool use_websocket = false;
     bool fixed_resolution = false;
     uint32_t format = V4L2_PIX_FMT_MJPEG;
     std::string v4l2_format = "mjpeg";
@@ -40,6 +41,16 @@ struct Args {
 
     // http signaling
     uint16_t http_port = 8080;
+
+    // websocket signaling
+    int ws_port = 8080;
+    std::string ws_host = "192.168.4.21";
+    std::string ws_token =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+        "eyJleHAiOjE3NzQ3NDU2MzksImlzcyI6IkFQSVduUVRzNHRtVVp2QSIsIm5iZiI6MTc0MzIwOTYzOSwic3ViIjoiZj"
+        "JkNzRiOTUtMmYxNi00ODRiLTg3NjctYThjNWY3NzFlZWY2IiwidmlkZW8iOnsiY2FuUHVibGlzaCI6dHJ1ZSwiY2Fu"
+        "UHVibGlzaERhdGEiOnRydWUsImNhblN1YnNjcmliZSI6ZmFsc2UsInJvb20iOiJkZXZpY2UtMSIsInJvb21Kb2luIj"
+        "p0cnVlfX0.o7e-gjkqfMpeDjATwaWWLKUWPa8RlaoIOcuw3p8FxQk";
 };
 
 #endif // ARGS_H_

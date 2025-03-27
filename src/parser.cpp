@@ -59,6 +59,11 @@ void Parser::ParseArgs(int argc, char *argv[], Args &args) {
         ("mqtt_password", bpo::value<std::string>()->default_value(args.mqtt_password),
             "Mqtt server password")
         ("http_port", bpo::value<uint16_t>()->default_value(args.http_port), "Http server port")
+        ("ws_host", bpo::value<std::string>()->default_value(args.ws_host),
+            "Websocket server host")
+        ("ws_port", bpo::value<int>()->default_value(args.ws_port), "Websocket server port")
+        ("ws_token", bpo::value<std::string>()->default_value(args.ws_token),
+            "Websocket server token")
         ("record_path", bpo::value<std::string>()->default_value(args.record_path),
             "The path to save the recording video files. The recorder won't start if it's empty")
         ("hw_accel", bpo::bool_switch()->default_value(args.hw_accel),
@@ -67,6 +72,8 @@ void Parser::ParseArgs(int argc, char *argv[], Args &args) {
             "Use mqtt to exchange sdp and ice candidates")
         ("use_whep", bpo::bool_switch()->default_value(args.use_whep),
             "Use whep to exchange sdp and ice candidates")
+        ("use_websocket", bpo::bool_switch()->default_value(args.use_websocket),
+            "Use websocket to exchange sdp and ice candidates")
         ("v4l2_format", bpo::value<std::string>()->default_value(args.v4l2_format),
             "Set v4l2 camera capture format to `i420`, `mjpeg`, `h264`. The `h264` can pass "
             "packets into mp4 without encoding to reduce cpu usage."
@@ -106,6 +113,9 @@ void Parser::ParseArgs(int argc, char *argv[], Args &args) {
     SetIfExists(vm, "mqtt_username", args.mqtt_username);
     SetIfExists(vm, "mqtt_password", args.mqtt_password);
     SetIfExists(vm, "http_port", args.http_port);
+    SetIfExists(vm, "ws_host", args.ws_host);
+    SetIfExists(vm, "ws_port", args.ws_port);
+    SetIfExists(vm, "ws_token", args.ws_token);
     SetIfExists(vm, "record_path", args.record_path);
 
     args.fixed_resolution = vm["fixed_resolution"].as<bool>();
@@ -113,6 +123,7 @@ void Parser::ParseArgs(int argc, char *argv[], Args &args) {
     args.hw_accel = vm["hw_accel"].as<bool>();
     args.use_mqtt = vm["use_mqtt"].as<bool>();
     args.use_whep = vm["use_whep"].as<bool>();
+    args.use_websocket = vm["use_websocket"].as<bool>();
 
     if (!args.stun_url.empty() && args.stun_url.substr(0, 4) != "stun") {
         std::cout << "Stun url should not be empty and start with \"stun:\"" << std::endl;

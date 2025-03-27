@@ -18,6 +18,14 @@ RtcPeer::~RtcPeer() {
     DEBUG_PRINT("peer connection (%s) was destroyed!", id_.c_str());
 }
 
+void RtcPeer::CreateOffer() {
+    if (signaling_state_ == webrtc::PeerConnectionInterface::SignalingState::kHaveLocalOffer) {
+        return;
+    }
+
+    peer_connection_->CreateOffer(this, webrtc::PeerConnectionInterface::RTCOfferAnswerOptions());
+}
+
 void RtcPeer::Terminate() {
     is_connected_.store(false);
     is_complete_.store(true);
@@ -105,6 +113,10 @@ void RtcPeer::OnCameraOption(OnCommand func) {
 }
 
 void RtcPeer::SubscribeCommandChannel(CommandType type, OnCommand func) {
+    if (!data_channel_subject_) {
+        ERROR_PRINT("Data channel is not created!");
+        return;
+    }
     auto observer = data_channel_subject_->AsObservable(type);
     observer->Subscribe([this, func](std::string message) {
         if (!message.empty()) {
@@ -114,6 +126,7 @@ void RtcPeer::SubscribeCommandChannel(CommandType type, OnCommand func) {
 }
 
 void RtcPeer::OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState new_state) {
+    signaling_state_ = new_state;
     auto state = webrtc::PeerConnectionInterface::AsString(new_state);
     DEBUG_PRINT("OnSignalingChange => %s", std::string(state).c_str());
     if (new_state == webrtc::PeerConnectionInterface::SignalingState::kHaveRemoteOffer) {
