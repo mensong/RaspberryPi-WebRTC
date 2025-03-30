@@ -8,6 +8,7 @@
 #include "recorder/recorder_manager.h"
 #include "signaling/http_service.h"
 #include "signaling/mqtt_service.h"
+#include "signaling/websocket_service.h"
 
 int main(int argc, char *argv[]) {
     Args args;
@@ -31,6 +32,10 @@ int main(int argc, char *argv[]) {
 
     if (args.use_whep) {
         services.push_back(HttpService::Create(args, conductor, ioc_));
+    }
+
+    if (args.use_websocket) {
+        services.push_back(WebsocketService::Create(args, conductor, ioc_));
     }
 
     if (args.use_mqtt) {

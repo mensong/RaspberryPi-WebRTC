@@ -79,17 +79,15 @@ void Conductor::AddTracks(rtc::scoped_refptr<webrtc::PeerConnectionInterface> pe
         return;
     }
 
-    std::string stream_id = "test_stream_id";
-
     if (audio_track_) {
-        auto audio_res = peer_connection->AddTrack(audio_track_, {stream_id});
+        auto audio_res = peer_connection->AddTrack(audio_track_, {args.uid});
         if (!audio_res.ok()) {
             ERROR_PRINT("Failed to add audio track, %s", audio_res.error().message());
         }
     }
 
     if (video_track_) {
-        auto video_res = peer_connection->AddTrack(video_track_, {stream_id});
+        auto video_res = peer_connection->AddTrack(video_track_, {args.uid});
         if (!video_res.ok()) {
             ERROR_PRINT("Failed to add video track, %s", video_res.error().message());
         }
@@ -101,8 +99,7 @@ void Conductor::AddTracks(rtc::scoped_refptr<webrtc::PeerConnectionInterface> pe
     }
 }
 
-rtc::scoped_refptr<RtcPeer> Conductor::CreatePeerConnection(PeerConfig peer_config) {
-    webrtc::PeerConnectionInterface::RTCConfiguration config;
+rtc::scoped_refptr<RtcPeer> Conductor::CreatePeerConnection(PeerConfig config) {
     config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
     webrtc::PeerConnectionInterface::IceServer server;
     server.uri = args.stun_url;
@@ -116,8 +113,8 @@ rtc::scoped_refptr<RtcPeer> Conductor::CreatePeerConnection(PeerConfig peer_conf
         config.servers.push_back(turn_server);
     }
 
-    peer_config.timeout = args.peer_timeout;
-    auto peer = RtcPeer::Create(std::move(peer_config));
+    config.timeout = args.peer_timeout;
+    auto peer = RtcPeer::Create(std::move(config));
     auto result = peer_connection_factory_->CreatePeerConnectionOrError(
         config, webrtc::PeerConnectionDependencies(peer.get()));
 
@@ -127,6 +124,11 @@ rtc::scoped_refptr<RtcPeer> Conductor::CreatePeerConnection(PeerConfig peer_conf
     }
 
     peer->SetPeer(result.MoveValue());
+
+    if (!config.is_publisher) {
+        return peer;
+    }
+
     peer->CreateDataChannel();
     peer->OnSnapshot([this](std::shared_ptr<DataChannelSubject> datachannel, std::string msg) {
         OnSnapshot(datachannel, msg);

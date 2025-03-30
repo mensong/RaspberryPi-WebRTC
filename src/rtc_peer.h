@@ -12,8 +12,9 @@
 #include "common/logging.h"
 #include "data_channel_subject.h"
 
-struct PeerConfig {
+struct PeerConfig : public webrtc::PeerConnectionInterface::RTCConfiguration {
     int timeout = 10;
+    bool is_publisher = true;
     bool has_candidates_in_sdp = false;
 };
 
@@ -82,6 +83,7 @@ class RtcPeer : public webrtc::PeerConnectionObserver,
 
     RtcPeer(PeerConfig config);
     ~RtcPeer();
+    void CreateOffer();
     void Terminate();
     bool IsConnected() const;
     std::string GetId() const;
@@ -129,6 +131,7 @@ class RtcPeer : public webrtc::PeerConnectionObserver,
 
     std::string modified_sdp_;
     webrtc::SdpParseError *modified_desc_error_;
+    webrtc::PeerConnectionInterface::SignalingState signaling_state_;
     std::unique_ptr<webrtc::SessionDescriptionInterface> modified_desc_;
 
     std::shared_ptr<DataChannelSubject> data_channel_subject_;

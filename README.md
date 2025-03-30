@@ -58,6 +58,8 @@ Use the [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to install 
 ### 2. Install Dependencies
 
 ```bash
+sudo apt update
+sudo apt full-upgrade
 sudo apt install libmosquitto1 pulseaudio libavformat59 libswscale6
 ```
 

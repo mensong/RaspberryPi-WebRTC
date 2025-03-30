@@ -8,6 +8,7 @@ endif()
 add_library(${PROJECT_NAME}
     mqtt_service.cpp
     http_service.cpp
+    websocket_service.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${MOSQUITTO_LIBS})
